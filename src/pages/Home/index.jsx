@@ -1,44 +1,39 @@
 import { useEffect, useState } from "react";
+import { getCharacters } from "../../api/rickAndMorty";
+import CharacterCard from "../../componets/CharacterCard";
 import "./style.css";
 
 export default function Home() {
-  const [message, setMessage] = useState("Carregando mensagem...");
+  const [personagens, setPersonagens] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    // Simula uma chamada de API
-    const timer = setTimeout(() => {
-      setMessage("Bem-vindo à nossa aplicação React 🚀");
-    }, 2000);
+    async function carregar() {
+      try {
+        const dados = await getCharacters();
+        setPersonagens(dados);
+      } catch (e) {
+        setErro(e.message);
+      } finally {
+        setCarregando(false);
+      }
+    }
 
-    // Função de limpeza (cleanup)
-    return () => {
-      clearTimeout(timer);
-    };
+    carregar();
   }, []);
 
-  return (
-    <div className="home">
-      <section className="hero">
-        <h2>Bem-vindo 👋</h2>
-        <p>{message}</p>
-      </section>
+  if (carregando) return <p className="feedback">Carregando personagens...</p>;
+  if (erro) return <p className="feedback erro">{erro}</p>;
 
-      <section className="features">
-        <div className="card">
-          <h3>Estrutura</h3>
-          <p>
-            Código organizado, componentes reutilizáveis e layout consistente.
-          </p>
-        </div>
-        <div className="card">
-          <h3>Escalável</h3>
-          <p>Pensado para crescer sem virar um emaranhado de CSS e JSX.</p>
-        </div>
-        <div className="card">
-          <h3>Didático</h3>
-          <p>Ideal para aprender React com boas práticas desde o início.</p>
-        </div>
-      </section>
+  return (
+    <div className="home page">
+      <h2 className="titulo-lista">Personagens - Rick and Morty</h2>
+      <div className="lista-personagens">
+        {personagens.map((personagem) => (
+          <CharacterCard key={personagem.id} character={personagem} />
+        ))}
+      </div>
     </div>
   );
 }
